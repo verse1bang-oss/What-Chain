@@ -44,17 +44,18 @@ RUN if [ ! -f "${BIN_PATH}" ]; then \
 
 FROM alpine:3.19
 WORKDIR /app
+ARG BIN_PATH=/bin/cli
 
 # Coying for command
 COPY --from=builder /go/src/github.com/canopy-network/canopy/bin ./canopy
 # Copying cli for auto update
-COPY --from=builder /bin/cli /bin/cli 
+COPY --from=builder ${BIN_PATH} ${BIN_PATH}
 # Copying entrypoint for persisting update cli
 COPY entrypoint.sh /app/entrypoint.sh
 
 RUN apk add --no-cache pigz ca-certificates
 
-RUN chmod +x /bin/cli
+RUN chmod +x ${BIN_PATH}
 RUN chmod +x /app/canopy
 RUN chmod +x /app/entrypoint.sh
 
