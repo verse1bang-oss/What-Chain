@@ -14,20 +14,18 @@ This directory contains Dockerfiles for running Canopy nodes with different plug
 
 ## Prerequisites
 
-For the auto-update system to work with plugins, you must configure the following in your Canopy config file:
+For the auto-update system to work with plugins, configure the plugin type and Canopy's built-in auto-update fields in your Canopy `config.json`.
 
 ### Required Configuration
 
 ```json
 {
-  "auto_update": {
+  "plugin": "python",
+  "autoUpdate": true,
+  "pluginAutoUpdate": {
     "enabled": true,
-    "plugin": {
-      "enabled": true,
-      "owner": "your-github-org",
-      "repo": "your-plugin-repo",
-      "asset_name": "plugin-name.tar.gz"
-    }
+    "repoOwner": "canopy-network",
+    "repoName": "canopy"
   }
 }
 ```
@@ -36,13 +34,15 @@ For the auto-update system to work with plugins, you must configure the followin
 
 | Field | Description | Example |
 |-------|-------------|---------|
-| `auto_update.enabled` | Enable auto-update for CLI | `true` |
-| `auto_update.plugin.enabled` | **Required: Enable plugin auto-update** | `true` |
-| `auto_update.plugin.owner` | GitHub repository owner | `"canopy-network"` |
-| `auto_update.plugin.repo` | GitHub repository name | `"canopy"` |
-| `auto_update.plugin.asset_name` | Release asset filename | See table below |
+| `plugin` | **Required:** plugin Canopy should start | `"python"` |
+| `autoUpdate` | Enable CLI auto-update | `true` |
+| `pluginAutoUpdate.enabled` | Enable plugin auto-update | `true` |
+| `pluginAutoUpdate.repoOwner` | GitHub repository owner | `"canopy-network"` |
+| `pluginAutoUpdate.repoName` | GitHub repository name | `"canopy"` |
 
-### Asset Names by Plugin Type
+### Expected Release Asset Names by Plugin Type
+
+Canopy selects the release asset name from the configured `plugin` type. The asset name is not configurable in `config.json`, so custom plugin repositories must publish the exact filename Canopy expects.
 
 | Plugin | Asset Name (x64) | Asset Name (ARM64) |
 |--------|------------------|-------------------|
@@ -50,7 +50,7 @@ For the auto-update system to work with plugins, you must configure the followin
 | Python | `python-plugin.tar.gz` | `python-plugin.tar.gz` |
 | TypeScript | `typescript-plugin.tar.gz` | `typescript-plugin.tar.gz` |
 | Kotlin | `kotlin-plugin.tar.gz` | `kotlin-plugin.tar.gz` |
-| C# | `csharp-plugin-linux-x64.tar.gz` | `csharp-plugin-linux-arm64.tar.gz` |
+| C# on Alpine | `csharp-plugin-linux-musl-x64.tar.gz` | `csharp-plugin-linux-musl-arm64.tar.gz` |
 
 ## Usage
 
@@ -68,17 +68,23 @@ services:
         BRANCH: main  # or 'latest' for latest tag
 ```
 
-### 2. Set Environment Variables
+### 2. Configure Canopy
 
-Create a `.env` file with required configuration:
+Set the Canopy config mounted at `/root/.canopy/config.json` so the node knows which plugin to start and where to check for plugin releases:
 
-```bash
-# Plugin configuration
-PLUGIN_TYPE=python
-PLUGIN_OWNER=your-org
-PLUGIN_REPO=your-repo
-PLUGIN_ASSET=python-plugin.tar.gz
+```json
+{
+  "plugin": "python",
+  "autoUpdate": true,
+  "pluginAutoUpdate": {
+    "enabled": true,
+    "repoOwner": "canopy-network",
+    "repoName": "canopy"
+  }
+}
 ```
+
+If you point `pluginAutoUpdate` at a different repository, publish the exact asset filename from the table above for the selected plugin type.
 
 ### 3. Build and Run
 
@@ -112,8 +118,8 @@ docker-compose up node1
 - Uses fat JAR with all dependencies included
 
 ### C#
-- Requires .NET 8.0 runtime
-- Uses framework-dependent deployment (not self-contained)
+- Uses a self-contained binary extracted from the release tarball
+- Alpine images expect the `linux-musl` release asset names shown above
 
 ### Go
 - Native binary, no runtime dependencies

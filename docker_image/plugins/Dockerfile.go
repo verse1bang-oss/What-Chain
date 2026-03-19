@@ -45,6 +45,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -o "${BIN_PATH}" ./cmd/main/...
 # =============================================================================
 FROM alpine:3.19
 WORKDIR /app
+ARG BIN_PATH=/bin/cli
 
 # Install runtime dependencies
 # - bash: required for pluginctl.sh scripts
@@ -57,7 +58,7 @@ RUN apk add --no-cache bash procps ca-certificates pigz
 COPY --from=builder /go/src/github.com/canopy-network/canopy/bin ./canopy
 
 # Copy CLI binary
-COPY --from=builder /bin/cli /bin/cli
+COPY --from=builder ${BIN_PATH} ${BIN_PATH}
 
 # Create plugin directory and copy only pluginctl.sh
 # Plugin binary will be downloaded from upstream release and extracted on first start
@@ -68,7 +69,7 @@ COPY --from=builder /go/src/github.com/canopy-network/canopy/plugin/go/pluginctl
 COPY entrypoint.sh /app/entrypoint.sh
 
 # Set permissions
-RUN chmod +x /bin/cli && \
+RUN chmod +x ${BIN_PATH} && \
     chmod +x /app/canopy && \
     chmod +x /app/entrypoint.sh && \
     chmod +x /app/plugin/go/pluginctl.sh

@@ -46,6 +46,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -o "${BIN_PATH}" ./cmd/main/...
 # Using Alpine base since C# plugin is now self-contained (includes .NET runtime)
 FROM alpine:3.19
 WORKDIR /app
+ARG BIN_PATH=/bin/cli
 
 # Install runtime dependencies
 # - bash: required for pluginctl.sh scripts
@@ -59,10 +60,10 @@ RUN apk add --no-cache bash procps ca-certificates pigz libstdc++ libgcc icu-lib
 COPY --from=builder /go/src/github.com/canopy-network/canopy/bin ./canopy
 
 # Copy CLI binary
-COPY --from=builder /bin/cli /bin/cli
+COPY --from=builder ${BIN_PATH} ${BIN_PATH}
 
 # Create plugin directory and copy only pluginctl.sh
-# Plugin DLL will be downloaded from upstream release and extracted on first start
+# Self-contained plugin binary will be downloaded from upstream release and extracted on first start
 RUN mkdir -p /app/plugin/csharp/bin
 COPY --from=builder /go/src/github.com/canopy-network/canopy/plugin/csharp/pluginctl.sh /app/plugin/csharp/pluginctl.sh
 
@@ -70,7 +71,7 @@ COPY --from=builder /go/src/github.com/canopy-network/canopy/plugin/csharp/plugi
 COPY entrypoint.sh /app/entrypoint.sh
 
 # Set permissions
-RUN chmod +x /bin/cli && \
+RUN chmod +x ${BIN_PATH} && \
     chmod +x /app/canopy && \
     chmod +x /app/entrypoint.sh && \
     chmod +x /app/plugin/csharp/pluginctl.sh
