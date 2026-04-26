@@ -23,7 +23,7 @@
   "dbName": "canopy",
   "inMemory": false,
   "networkID": 1,
-  "listenAddress": "0.0.0.0:9003",
+  "listenAddress": "0.0.0.0:50000",
   "externalAddress": "tcp://what-chain-production.up.railway.app",
   "maxInbound": 21,
   "maxOutbound": 7,
