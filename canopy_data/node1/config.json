@@ -24,7 +24,7 @@
   "inMemory": false,
   "networkID": 1,
   "listenAddress": "0.0.0.0:9003",
-  "externalAddress": "tcp://what-chain-production.up.railway.app:9003",
+  "externalAddress": "tcp://what-chain-production.up.railway.app",
   "maxInbound": 21,
   "maxOutbound": 7,
   "trustedPeerIDs": null,
