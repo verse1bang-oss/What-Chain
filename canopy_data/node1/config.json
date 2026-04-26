@@ -5,7 +5,7 @@
   "rootChain": [
     {
       "chainId": 1,
-      "url": "http://node1:50002"
+      "url": "http://localhost:50002"
     }
   ],
   "runVDF": true,
